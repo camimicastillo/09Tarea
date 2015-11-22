@@ -7,41 +7,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import (leastsq, curve_fit)
 
-def func_modelo_a(params, d):
+def func_modelo(params, x):
     # Modelo que utilizó Hubble: v = Ho * d (Caso a)
+    # d = (1 / Ho) * v (Caso b)
     Ho = params
-    return Ho * d
-
-def func_modelo_b(params, v):
-    # Modelo que utilizó Hubble: d = v / Ho (Caso b)
-    Ho = params
-    return v / Ho
+    return Ho * x
 
 
-def func_a_minimizar_a(params, d_data, v_data):
-    # Función chi-cuadrado o función error = v - Ho * d
-    return (v_data - func_modelo_a(params, d_data))
-
-def func_a_minimizar_b(params, v_data, d_data):
-    # Función chi-cuadrado o función error = d - v / Ho
-    return (d_data - func_modelo_b(params, v_data))
+def func_a_minimizar(params, x_data, y_data):
+    # Función chi-cuadrado o función error = v - Ho * d (Caso a)
+    # Función chi-cuadrado o función error = d - v / Ho (Caso b)
+    return (y_data - func_modelo(params, x_data))
 
 
 # Main
-#Cargar datos
+# Cargar datos
 datos = np.loadtxt("data/hubble_original.dat")
 d = datos[:, 0] # Distancia [Mpc]
 v = datos[:, 1] # Velocidad [km/s]
 
 # Setup
-# Adivinanza para el valor de Ho
+# Adivinanza para el valor de Ho, caso a
 a0 = 4
 # Minimizacion del chi-cuadrado caso a
-resultado_a = leastsq(func_a_minimizar_a, a0, args=(d, v))
+resultado_a = leastsq(func_a_minimizar, a0, args=(d, v))
 print "Status para a: ", resultado_a[1]
 print "mejor fit para Ho, caso a: ", resultado_a[0]
 
-#Minimizacion del chi-cuadrado caso b
-resultado_b = leastsq(func_a_minimizar_b, a0, args=(v, d))
+#Adivinanza para el valor de 1/Ho, caso b
+a1 = 5
+# Minimizacion del chi-cuadrado caso b
+resultado_b = leastsq(func_a_minimizar, a1, args=(v, d))
 print "Status para b: ", resultado_b[1]
-print "mejor fit para Ho, caso b: ", resultado_b[0]
+# En este caso el parámetro que optimizamos fue 1/Ho, pero Ho es el
+# valor que buscamos
+Ho_b = 1 / resultado_b[0]
+print "mejor fit para Ho, caso b: ", Ho_b
