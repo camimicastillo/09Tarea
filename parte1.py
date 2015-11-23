@@ -33,6 +33,7 @@ a0 = 4
 resultado_a = leastsq(func_a_minimizar, a0, args=(d, v))
 print "Status para a: ", resultado_a[1]
 print "mejor fit para Ho, caso a: ", resultado_a[0]
+Ho_a = resultado_a[0]
 
 #Adivinanza para el valor de 1/Ho, caso b
 a1 = 5
@@ -43,3 +44,27 @@ print "Status para b: ", resultado_b[1]
 # valor que buscamos
 Ho_b = 1 / resultado_b[0]
 print "mejor fit para Ho, caso b: ", Ho_b
+
+# Como se busca una alternativa que sea simétrica se propone promediar los
+# valores obtenidos y utilizar este promedio como el Ho óptimo
+Ho_prom = (Ho_a + Ho_b) / 2
+
+
+# Se grafican los valores experimentales y el ajuste con la minimización
+# de la función chi-cuadrado (usando el Ho óptimo encontrado)
+fig = plt.figure()
+fig.clf()
+ax1 = fig.add_subplot(111)
+
+
+ax1.plot(d, v, '*', label="Datos experimentales")
+ax1.plot(d, Ho_prom * d, label="Ajuste usando $H_o$ optimo")
+
+ax1.set_xlim([-0.5, 2.5])
+ax1.set_xlabel("Distancia $[Mpc]$")
+ax1.set_ylabel("Velocidad $[km/s]$")
+ax1.set_title("Grafico de distancia $[Mpc]$ versus velocidad $[km/s]$")
+
+plt.legend(loc='upper left')
+plt.draw()
+plt.show()
