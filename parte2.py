@@ -7,8 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import (leastsq, curve_fit)
 
-np.random.seed(500)
-
 def func_modelo(params, x):
     # Modelo que utilizó Hubble: v = Ho * d (Caso a)
     # d = (1 / Ho) * v (Caso b)
@@ -45,13 +43,13 @@ def bootstrap(data):
 
 # Main
 # Cargar datos
-datos = np.loadtxt("data/hubble_original.dat")
-d = datos[:, 0] # Distancia [Mpc]
-v = datos[:, 1] # Velocidad [km/s]
+datos = np.loadtxt("data/SNIa.dat", usecols=(1,2))
+d = datos[:, 1] # Distancia [Mpc]
+v = datos[:, 0] # Velocidad [km/s]
 
 # Setup
 # Adivinanza para el valor de Ho, caso a
-a0 = 4
+a0 = 1
 # Minimizacion del chi-cuadrado caso a
 resultado_a = leastsq(func_a_minimizar, a0, args=(d, v))
 print "Status para a: ", resultado_a[1]
@@ -59,7 +57,7 @@ print "mejor fit para Ho, caso a: ", resultado_a[0]
 Ho_a = resultado_a[0]
 
 #Adivinanza para el valor de 1/Ho, caso b
-a1 = 5
+a1 = 100
 # Minimizacion del chi-cuadrado caso b
 resultado_b = leastsq(func_a_minimizar, a1, args=(v, d))
 print "Status para b: ", resultado_b[1]
@@ -83,7 +81,7 @@ ax1 = fig.add_subplot(111)
 ax1.plot(d, v, '*', label="Datos experimentales")
 ax1.plot(d, Ho_prom * d, label="Ajuste usando $H_o$ optimo")
 
-ax1.set_xlim([-0.5, 2.5])
+#ax1.set_xlim([-0.5, 2.5])
 ax1.set_xlabel("Distancia $[Mpc]$")
 ax1.set_ylabel("Velocidad $[km/s]$")
 ax1.set_title("Grafico de distancia $[Mpc]$ versus velocidad $[km/s]$")
