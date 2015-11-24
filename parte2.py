@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import (leastsq, curve_fit)
 
+np.random.seed(889762)
+
 def func_modelo(params, x):
     # Modelo que utilizó Hubble: v = Ho * d (Caso a)
     # d = (1 / Ho) * v (Caso b)
