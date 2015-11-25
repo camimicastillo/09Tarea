@@ -1,13 +1,14 @@
 '''
-Este script
+Este script calcula la constante de Hubble con un intervalo de confianza
+del 95% (algoritmo Bootstrap), para los datos del archivo hubble_original.dat
 '''
-
 from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import (leastsq, curve_fit)
 
 np.random.seed(500)
+
 
 def func_modelo(params, x):
     # Modelo que utilizó Hubble: v = Ho * d (Caso a)
@@ -22,10 +23,10 @@ def func_a_minimizar(params, x_data, y_data):
     return (y_data - func_modelo(params, x_data))
 
 
-def bootstrap(data):
+def bootstrap(data, x_data):
     # Simulacion de bootstrap para encontrar el intervalo de confianza al 95%
     N = data.shape[0]
-    N_boot = 10000
+    N_boot = int(len(x_data)) ** 2
     H = np.zeros(N_boot)
     for i in range(N_boot):
         s = np.random.randint(low=0, high=N, size=N)
@@ -37,17 +38,19 @@ def bootstrap(data):
         H2 = 1 / casi_H2
         Hprom = (H1 + H2) / 2
         H[i] = Hprom
-    H = np.sort(H)
-    lim_inf = H[int(N_boot * 0.025)]
-    lim_sup = H[int(N_boot * 0.975)]
-    print "El intervalo de confianza al 95% es: [{}:{}]".format(lim_inf, lim_sup)
+    H_ord = np.sort(H)
+    lim_inf = H_ord[int(N_boot * 0.025)]
+    lim_sup = H_ord[int(N_boot * 0.975)]
+    print "El intervalo de confianza " \
+          "al 95% es: [{}:{}]".format(lim_inf, lim_sup)
+    return H, lim_inf, lim_sup
 
 
 # Main
 # Cargar datos
 datos = np.loadtxt("data/hubble_original.dat")
-d = datos[:, 0] # Distancia [Mpc]
-v = datos[:, 1] # Velocidad [km/s]
+d = datos[:, 0]  # Distancia [Mpc]
+v = datos[:, 1]  # Velocidad [km/s]
 
 # Setup
 # Adivinanza para el valor de Ho, caso a
@@ -58,7 +61,7 @@ print "Status para a: ", resultado_a[1]
 print "mejor fit para Ho, caso a: ", resultado_a[0]
 Ho_a = resultado_a[0]
 
-#Adivinanza para el valor de 1/Ho, caso b
+# Adivinanza para el valor de 1/Ho, caso b
 a1 = 5
 # Minimizacion del chi-cuadrado caso b
 resultado_b = leastsq(func_a_minimizar, a1, args=(v, d))
@@ -93,4 +96,17 @@ plt.draw()
 plt.show()
 
 # Intervalo de confianza
-interv_confianza = bootstrap(datos)
+interv_confianza, lim_inf, lim_sup = bootstrap(datos, d)
+
+# Histograma
+fig2 = plt.figure(2)
+fig2.clf()
+plt.hist(interv_confianza, bins=50, facecolor='g', alpha=0.5)
+plt.axvline(Ho_prom, color='r', label="Valor optimo encontrado")
+plt.axvline(lim_inf, color='b',
+            label="Intervalo de confianza al 95$\%$")
+plt.axvline(lim_sup, color='b')
+plt.title("Histograma $H_0$")
+plt.legend(fontsize=11)
+plt.draw()
+plt.show()

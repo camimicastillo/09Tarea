@@ -1,5 +1,7 @@
 '''
-Este script
+Este script hace un ajuste lineal a los datos del archivo DR9Q.dat
+y calcula el intervalo de confianza al 95 por ciento para los parametros
+encontrados.
 '''
 
 from __future__ import division
@@ -11,11 +13,11 @@ np.random.seed(9102)
 
 # Main
 # Cargar datos
-datos = np.loadtxt("data/DR9Q.dat", usecols=(80,81,82,83))
-flujo_i = datos[:, 0] # Distancia [Mpc]
-error_i = datos[:, 1] # Velocidad [km/s]
-flujo_z = datos[:, 2] # Distancia [Mpc]
-error_z = datos[:, 3] # Velocidad [km/s]
+datos = np.loadtxt("data/DR9Q.dat", usecols=(80, 81, 82, 83))
+flujo_i = datos[:, 0]
+error_i = datos[:, 1]
+flujo_z = datos[:, 2]
+error_z = datos[:, 3]
 
 # Setup
 # Cambiar unidades
@@ -37,20 +39,20 @@ for i in range(N_mc):
     falsos_z = Flujo_z + Error_z * r
     a[i], b[i] = np.polyfit(falsos_i, falsos_z, 1)
 
-a = np.sort(a)
-b = np.sort(b)
-lim_inf_a = a[int(N_mc * 0.025)]
-lim_sup_a = a[int(N_mc * 0.975)]
-lim_inf_b = b[int(N_mc * 0.025)]
-lim_sup_b = b[int(N_mc * 0.975)]
+a_ord = np.sort(a)
+b_ord = np.sort(b)
+lim_inf_a = a_ord[int(N_mc * 0.025)]
+lim_sup_a = a_ord[int(N_mc * 0.975)]
+lim_inf_b = b_ord[int(N_mc * 0.025)]
+lim_sup_b = b_ord[int(N_mc * 0.975)]
 
 print "El intervalo de confianza para " \
-          "la pendiente a al 95% es: [{}:{}]".format(lim_inf_a, lim_sup_a)
+      "la pendiente a al 95% es: [{}:{}]".format(lim_inf_a, lim_sup_a)
 print "El intervalo de confianza para el " \
-          "coef de posicion b al 95% es: [{}:{}]".format(lim_inf_b, lim_sup_b)
+      "coef de posicion b al 95% es: [{}:{}]".format(lim_inf_b, lim_sup_b)
 
 # Polyfit con los datos reales
-a_real, b_real= np.polyfit(Flujo_i, Flujo_z, 1)
+a_real, b_real = np.polyfit(Flujo_i, Flujo_z, 1)
 print a_real, 'Coeficiente a del ajuste lineal a*x+b'
 print b_real, 'Coeficiente b del ajuste lineal a*x+b'
 
@@ -71,5 +73,30 @@ ax1.set_ylabel("Flujo Banda z [$10^{-6} Jy$]")
 ax1.set_title("Grafico de Flujo de Banda en i vs Flujo de Banda en z")
 
 plt.legend(loc='upper left')
+plt.draw()
+plt.show()
+
+# Histograma para a y b
+fig2 = plt.figure(2)
+fig2.clf()
+plt.hist(a, bins=30, facecolor='g', alpha=0.5)
+plt.axvline(a_real, color='r', label="Valor que entrega polyfit")
+plt.axvline(lim_inf_a, color='b',
+            label="Extremos intervalo de confianza al 95$\%$")
+plt.axvline(lim_sup_a, color='b')
+plt.title('Histograma para $a$ de la formula $y = a * x + b$')
+plt.legend()
+plt.draw()
+plt.show()
+
+fig3 = plt.figure(3)
+fig3.clf()
+plt.hist(b, bins=30, facecolor='g', alpha=0.5)
+plt.axvline(b_real, color='r', label="Valor que entrega polyfit")
+plt.axvline(lim_inf_b, color='b',
+            label="Extremos intervalo de confianza al 95$\%$")
+plt.axvline(lim_sup_b, color='b')
+plt.title('Histograma para $b$ de la formula $y = a * x + b$')
+plt.legend()
 plt.draw()
 plt.show()
